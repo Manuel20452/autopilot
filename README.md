@@ -1,115 +1,170 @@
-# 🛡️ GroupGuard Bot — Telegram Group Management
+# ⚡ AutoPilot — File & Data Automation Toolkit
 
-A powerful Telegram bot for group moderation with welcome messages, customizable rules, anti-spam protection, and full admin tools.
+A Python CLI tool that automates repetitive file operations: organize files into folders, find duplicates, clean CSV/JSON data, and bulk rename files.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Telegram](https://img.shields.io/badge/Telegram-Bot_API_20+-26A5E4?logo=telegram&logoColor=white)
+![CLI](https://img.shields.io/badge/Interface-CLI-yellow)
 
 ## Features
 
-- **Welcome System** — Auto-greet new members with custom messages + inline "Read Rules" button
-- **Rules Management** — Set and display group rules with `/rules`
-- **Anti-Spam** — Detects message flooding and link spam, auto-mutes offenders
-- **Moderation Tools** — Warn, mute, unmute, kick, ban, unban users
-- **Warning System** — 3 warnings = automatic mute (configurable)
-- **Stats Dashboard** — View group member count, warnings, and config status
-- **Persistent Config** — Settings saved to JSON, survive restarts
+- **File Organizer** — Auto-sort files into categorized folders (Images, Documents, Code, etc.)
+- **Duplicate Finder** — Detect and remove duplicate files using MD5 hash comparison
+- **Data Cleaner** — Clean CSV/JSON files: remove duplicates, empty rows, strip whitespace
+- **Bulk Renamer** — Rename files with custom patterns ({n}, {date}, {original})
+- **Dry Run Mode** — Preview all changes before executing
+- **Zero Dependencies** — Uses only Python standard library
 
 ## Quick Start
 
 ```bash
-# Clone the repo
-git clone https://github.com/Manuel20452/groupguard-bot.git
-cd groupguard-bot
+git clone https://github.com/Manuel20452/autopilot.git
+cd autopilot
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the bot
-python bot.py
+# No dependencies needed! Just run:
+python autopilot.py
 ```
 
-On first run, the bot asks for your Telegram Bot Token. Get one from [@BotFather](https://t.me/BotFather).
+## Usage
 
-You can also set it as an environment variable:
+### Interactive Mode
 ```bash
-export TELEGRAM_BOT_TOKEN="your_token_here"
-python bot.py
+python autopilot.py
+# Choose from the menu: organize, duplicates, clean, or rename
 ```
 
-## Setup in Your Group
+### Command Line
 
-1. Add the bot to your Telegram group
-2. Make it **admin** with these permissions:
-   - Delete messages
-   - Ban users
-   - Restrict members
-3. Done! The bot starts working immediately
+#### Organize Files
+```bash
+# Sort files in Downloads into category folders
+python autopilot.py organize ~/Downloads
 
-## Commands
-
-| Command | Description | Who |
-|---------|-------------|-----|
-| `/start` | Bot info | Everyone |
-| `/help` | Show all commands | Everyone |
-| `/rules` | Display group rules | Everyone |
-| `/stats` | Group statistics | Everyone |
-| `/setwelcome <text>` | Set welcome message | Admin |
-| `/setrules <rules>` | Set rules (separate with `\|`) | Admin |
-| `/antispam on/off` | Toggle anti-spam | Admin |
-| `/config` | Show current settings | Admin |
-| `/warn` | Warn a user (reply) | Admin |
-| `/mute [minutes]` | Mute user (reply, default 5min) | Admin |
-| `/unmute` | Unmute user (reply) | Admin |
-| `/kick` | Kick user (reply) | Admin |
-| `/ban` | Permanent ban (reply) | Admin |
-| `/unban` | Unban user (reply) | Admin |
-
-## Anti-Spam Settings
-
-Default configuration:
-- **Max messages:** 5 messages per 10 seconds triggers mute
-- **Mute duration:** 5 minutes
-- **Max links:** 2 per message
-- **Warning limit:** 3 warns before auto-mute
-
-All settings are customizable via `config.json`.
-
-## Example Usage
-
-### Set Custom Welcome
-```
-/setwelcome 🎉 Welcome {name}! Please read the rules and enjoy your stay!
+# Preview first (dry run)
+python autopilot.py organize ~/Downloads --dry-run
 ```
 
-### Set Custom Rules
+**Output:**
 ```
-/setrules No spam | Be respectful | English only | No NSFW
+📁 Organizing: /home/user/Downloads
+
+  photo.jpg → Images/
+  report.pdf → Documents/
+  script.py → Code/
+  song.mp3 → Audio/
+  backup.zip → Archives/
+
+[✓] Moved 5/5 files
 ```
 
-### Moderate Users
-Reply to a message and use:
-```
-/warn    → Gives a warning (3 = auto-mute)
-/mute 10 → Mutes for 10 minutes
-/kick    → Removes from group
-/ban     → Permanent ban
+#### Find Duplicates
+```bash
+# Scan for duplicates
+python autopilot.py duplicates ~/Pictures
+
+# Scan and remove duplicates
+python autopilot.py duplicates ~/Pictures --remove
 ```
 
-## Project Structure
+**Output:**
+```
+🔍 Scanning for duplicates in: /home/user/Pictures
 
+  Scanned: 234 files
+  Duplicates found: 3 groups
+
+  📄 2.4 MB — 2 copies:
+     /Pictures/IMG_001.jpg
+     /Pictures/backup/IMG_001.jpg
+
+  💾 Space wasted by duplicates: 7.2 MB
 ```
-groupguard-bot/
-├── bot.py              # Main bot code
-├── config.json         # Auto-generated settings (after first run)
-├── requirements.txt    # Python dependencies
-└── README.md
+
+#### Clean Data Files
+```bash
+# Clean a CSV file
+python autopilot.py clean messy_data.csv
+
+# Clean and save to specific output
+python autopilot.py clean data.json --output clean_data.json
 ```
+
+**Output:**
+```
+📊 Loaded 1500 records from messy_data.csv
+  [✓] Stripped whitespace from all fields
+  [✓] Removed 23 duplicate rows (1477 remaining)
+  [✓] Removed 8 rows with empty values
+
+  ==================================================
+  DATA SUMMARY
+  ==================================================
+  Rows: 1469
+  Columns: 6
+  ==================================================
+
+  [✓] Exported to: messy_data_cleaned.csv
+```
+
+#### Bulk Rename
+```bash
+# Rename with sequential numbers
+python autopilot.py rename ~/Photos --pattern "vacation_{n}"
+
+# Preview first
+python autopilot.py rename ~/Photos --pattern "{date}_{original}" --dry-run
+```
+
+**Output:**
+```
+✏️ Bulk rename in: /home/user/Photos
+
+  IMG_4521.jpg → vacation_001.jpg
+  IMG_4522.jpg → vacation_002.jpg
+  IMG_4523.jpg → vacation_003.jpg
+
+[✓] Renamed 3/3 files
+```
+
+## As a Python Module
+
+```python
+from autopilot import FileOrganizer, DuplicateFinder, DataCleaner, BulkRenamer
+
+# Organize files
+FileOrganizer("~/Downloads").organize(dry_run=True)
+
+# Find duplicates
+dupes = DuplicateFinder("~/Pictures").find_duplicates()
+
+# Clean data with chaining
+DataCleaner("data.csv") \
+    .strip_whitespace() \
+    .remove_duplicates() \
+    .remove_empty() \
+    .filter_rows("age", lambda x: int(x) >= 18) \
+    .summary() \
+    .export("clean_data.csv")
+
+# Bulk rename
+BulkRenamer("~/Photos").rename(pattern="trip_{n}", dry_run=True)
+```
+
+## File Categories
+
+| Category | Extensions |
+|----------|-----------|
+| Images | .jpg .png .gif .svg .webp .bmp |
+| Documents | .pdf .doc .docx .txt .xlsx .csv .pptx |
+| Videos | .mp4 .mkv .avi .mov .webm |
+| Audio | .mp3 .wav .flac .aac .ogg |
+| Code | .py .js .html .css .java .cpp .sh |
+| Archives | .zip .rar .7z .tar .gz |
+| Other | Everything else |
 
 ## Tech Stack
 
-`Python` `python-telegram-bot` `Telegram Bot API` `JSON`
+`Python` `argparse` `hashlib` `pathlib` `CSV` `JSON`
 
 ## License
 
